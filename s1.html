@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FixMyWard – Report a civic problem</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f3;--card:#fff;--ink:#23272b;--mute:#667;--line:#d9dcd3;--green:#0f6b5c;--yellow:#f2b705;--red:#c0392b}
+@media (prefers-color-scheme:dark){:root{--bg:#171a1c;--card:#202427;--ink:#eef0ea;--mute:#a3aaa6;--line:#343a3d;--green:#3fb8a2}}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:56px;line-height:1.5}
+h1,h2,h3{font-family:'Bricolage Grotesque','DM Sans',sans-serif;margin:0;line-height:1.1}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.hidden{display:none!important}
+
+/* login */
+.login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.hero{background:var(--green);color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(2.4rem,5vw,4rem);font-weight:800;max-width:11ch}
+.hero p{max-width:34ch;opacity:.9}
+.hero{padding-bottom:250px}
+.hero>div{position:relative;z-index:1}
+.skyline{position:absolute;left:0;bottom:0;width:100%;height:230px}
+.banner{display:block;width:100%;height:150px;background:var(--green);border-radius:12px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:8px}
+.mark{width:28px;height:28px}
+#logout{padding:8px 14px}
+.brand{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.3rem}
+.formside{display:grid;place-items:center;padding:32px}
+.box{width:100%;max-width:380px}
+.box h2{font-size:1.9rem;margin-bottom:6px}
+label{display:block;font-weight:700;margin:16px 0 6px;font-size:.92rem}
+input[type=text],input[type=email],input[type=password],textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--card)}
+textarea{min-height:90px;resize:vertical}
+.btn{border:0;border-radius:8px;padding:13px 20px;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+.btn:hover{filter:brightness(1.1)}
+.btn.full{width:100%;margin-top:22px}
+.link{background:none;border:0;color:var(--green);font-weight:700;cursor:pointer;padding:0;text-decoration:underline}
+.err{color:var(--red);font-size:.88rem;min-height:1.2em;margin-top:8px}
+
+/* app */
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header .brand{margin-right:auto;color:var(--green)}
+nav button{background:none;border:0;padding:8px 14px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;color:var(--mute)}
+nav button[aria-current=true]{color:var(--ink);border-color:var(--yellow)}
+main{max-width:720px;margin:0 auto;padding:28px 20px}
+main h2{font-size:2rem;margin-bottom:4px}
+.sub{color:var(--mute);margin:0 0 20px}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.cat{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:500}
+.cat[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.route{margin-top:10px;padding:10px 14px;border-left:5px solid var(--yellow);background:var(--card);border-radius:0 8px 8px 0;font-size:.92rem}
+.drop{display:grid;place-items:center;text-align:center;min-height:150px;border:2px dashed var(--line);border-radius:10px;background:var(--card);cursor:pointer;overflow:hidden;color:var(--mute)}
+.drop:hover{border-color:var(--green)}
+.drop img{width:100%;max-height:280px;object-fit:cover;display:block}
+.addr{position:relative}
+.mic{position:absolute;right:8px;bottom:8px;width:42px;height:42px;border-radius:50%;border:0;background:var(--green);color:#fff;cursor:pointer;font-size:1.1rem}
+.mic.on{background:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(192,57,43,.25)}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.small{font-size:.85rem;color:var(--mute)}
+.report{width:100%;margin-top:26px;background:var(--yellow);color:#23272b;font-size:1.1rem;padding:16px;font-family:'Bricolage Grotesque';font-weight:800}
+
+/* tracking */
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+.c .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.id{font-weight:700}
+.steps{display:flex;margin:18px 0 8px;padding:0;list-style:none}
+.steps li{flex:1;text-align:center;font-size:.78rem;color:var(--mute);position:relative}
+.steps li::before{content:"";display:block;width:16px;height:16px;border-radius:50%;background:var(--line);margin:0 auto 6px;position:relative;z-index:1}
+.steps li::after{content:"";position:absolute;top:7px;left:-50%;width:100%;height:3px;background:var(--line)}
+.steps li:first-child::after{display:none}
+.steps li.done{color:var(--ink);font-weight:700}
+.steps li.done::before,.steps li.done::after{background:var(--green)}
+.empty{text-align:center;padding:40px 10px;color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:8px;z-index:20;max-width:90%}
+
+/* privacy ticker */
+.ticker{position:fixed;left:0;right:0;bottom:0;height:40px;background:var(--ink);color:var(--bg);overflow:hidden;display:flex;align-items:center;z-index:10;font-size:.9rem}
+.ticker span{white-space:nowrap;padding-left:100%;animation:run 22s linear infinite}
+@keyframes run{to{transform:translateX(-100%)}}
+@media (prefers-reduced-motion:reduce){.ticker span{animation:none;padding:0 16px;white-space:normal}.mic.on{animation:none}}
+@media (max-width:760px){.login{grid-template-columns:1fr}.hero{padding:28px 28px 170px}.skyline{height:150px}}
+</style>
+</head>
+<body>
+
+<!-- Shared city illustration (inline SVG, no external images needed) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="skyline" viewBox="0 0 800 220">
+    <g fill="#0b5448"><rect x="20" y="90" width="70" height="100"/><rect x="110" y="50" width="60" height="140"/><rect x="250" y="70" width="80" height="120"/><rect x="420" y="40" width="70" height="150"/><rect x="560" y="80" width="90" height="110"/><rect x="690" y="60" width="70" height="130"/></g>
+    <g fill="#094237"><rect x="85" y="110" width="50" height="80"/><rect x="170" y="85" width="60" height="105"/><rect x="330" y="105" width="60" height="85"/><rect x="490" y="95" width="60" height="95"/><rect x="650" y="110" width="45" height="80"/></g>
+    <g fill="#f2b705" opacity=".85"><rect x="35" y="105" width="10" height="12"/><rect x="60" y="130" width="10" height="12"/><rect x="125" y="70" width="10" height="12"/><rect x="145" y="100" width="10" height="12"/><rect x="270" y="90" width="10" height="12"/><rect x="300" y="125" width="10" height="12"/><rect x="435" y="60" width="10" height="12"/><rect x="460" y="90" width="10" height="12"/><rect x="440" y="125" width="10" height="12"/><rect x="580" y="100" width="10" height="12"/><rect x="620" y="130" width="10" height="12"/><rect x="705" y="80" width="10" height="12"/><rect x="735" y="115" width="10" height="12"/></g>
+    <circle cx="400" cy="152" r="26" fill="#1e8a74"/><rect x="397" y="170" width="6" height="20" fill="#094237"/>
+    <circle cx="238" cy="160" r="18" fill="#1e8a74"/><rect x="236" y="172" width="4" height="18" fill="#094237"/>
+    <path d="M520 190V112h-0" stroke="#cfd6d0" stroke-width="3" fill="none"/><path d="M520 112h-22" stroke="#cfd6d0" stroke-width="3"/><circle cx="498" cy="114" r="6" fill="#f2b705"/>
+    <rect y="188" width="800" height="32" fill="#1d2326"/>
+    <line x1="0" y1="206" x2="800" y2="206" stroke="#f2b705" stroke-width="4" stroke-dasharray="28 22"/>
+    <polygon points="604,188 628,188 616,160" fill="#e8590c"/><rect x="608" y="174" width="16" height="5" fill="#fff"/>
+  </symbol>
+</svg>
+
+<!-- LOGIN -->
+<section id="login" class="login">
+  <div class="hero">
+    <div class="brand"><svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 2C8.5 2 5 6 5 10.5 5 17 14 26 14 26s9-9 9-15.5C23 6 19.5 2 14 2z" fill="currentColor"/><circle cx="14" cy="10.5" r="4" fill="#f2b705"/></svg>FixMyWard</div>
+    <div>
+      <h1>Broken road? Tell the right office.</h1>
+      <p>Report a civic problem in under a minute. It goes straight to the department that fixes it, and you can follow every step.</p>
+    </div>
+    <svg class="skyline" viewBox="0 0 800 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><use href="#skyline" width="800" height="220"/></svg>
+  </div>
+  <div class="formside">
+    <form class="box" id="loginForm" novalidate>
+      <h2 id="loginTitle">Log in</h2>
+      <p class="small">Log in to report and track your complaints.</p>
+      <div id="nameWrap" class="hidden"><label for="name">Full name</label><input type="text" id="name" autocomplete="name"></div>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email">
+      <label for="pass">Password</label>
+      <input type="password" id="pass" autocomplete="current-password">
+      <div class="err" id="loginErr" role="alert"></div>
+      <button class="btn full" type="submit" id="loginBtn">Log in</button>
+      <p class="small" style="margin-top:16px"><span id="swText">New here?</span> <button type="button" class="link" id="swBtn">Create an account</button></p>
+    </form>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header>
+    <div class="brand"><svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 2C8.5 2 5 6 5 10.5 5 17 14 26 14 26s9-9 9-15.5C23 6 19.5 2 14 2z" fill="currentColor"/><circle cx="14" cy="10.5" r="4" fill="#f2b705"/></svg>FixMyWard</div>
+    <nav>
+      <button data-tab="report" aria-current="true">Report</button>
+      <button data-tab="track" aria-current="false">My complaints</button>
+    </nav>
+    <button class="btn" id="logout">Log out</button>
+  </header>
+
+  <main>
+    <!-- Report page -->
+    <section id="tab-report">
+      <svg class="banner" viewBox="0 0 800 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><use href="#skyline" width="800" height="220"/></svg>
+      <h2>Report a problem</h2>
+      <p class="sub">Hello, <span id="who">citizen</span>. Pick a category, add a photo and the location.</p>
+
+      <label>What is the problem about?</label>
+      <div class="cats" id="cats"></div>
+      <div class="route" id="route">Select a category to see which office will handle it.</div>
+
+      <label for="photo">Photo</label>
+      <label class="drop" id="drop" for="photo">
+        <span id="dropText">Tap to upload a photo of the problem</span>
+        <img id="preview" alt="Uploaded photo preview" class="hidden">
+      </label>
+      <input type="file" id="photo" accept="image/*" class="hidden">
+
+      <label for="addr">Address or landmark</label>
+      <div class="addr">
+        <textarea id="addr" placeholder="Type the address, or press the mic and speak"></textarea>
+        <button type="button" class="mic" id="mic" aria-label="Speak the address" title="Speak the address">🎤</button>
+      </div>
+      <div class="small" id="micMsg"></div>
+
+      <label for="desc">Describe the problem (optional)</label>
+      <textarea id="desc" placeholder="e.g. Large pothole near the bus stop, two bikes fell yesterday"></textarea>
+
+      <div class="err" id="repErr" role="alert"></div>
+      <button class="btn report" id="reportBtn">Report</button>
+    </section>
+
+    <!-- Tracking page -->
+    <section id="tab-track" class="hidden">
+      <h2>My complaints</h2>
+      <p class="sub">Follow each complaint from submission to resolution.</p>
+      <div id="list"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast hidden" id="toast" role="status"></div>
+
+<!-- Privacy ticker -->
+<div class="ticker" aria-label="Privacy notice"><span>🔒 Your details are private. They are shared only with the office handling your complaint and are never made public.</span></div>
+
+<script>
+// ---------- data ----------
+// each category and the office that handles it (change these to your real offices)
+var categories = {
+  "Roads & potholes": "Roads & Infrastructure Dept. - Ward Engineer",
+  "Garbage & cleaning": "Solid Waste Management - Sanitary Inspector",
+  "Water supply": "Water Board - Section Officer",
+  "Drainage & sewage": "Drainage Dept. - Assistant Engineer",
+  "Streetlights": "Electricity Dept. - Lighting Supervisor",
+  "Parks & public spaces": "Parks & Horticulture - Garden Officer",
+  "Other": "Ward Office - Complaint Desk"
+};
+var icons = {
+  "Roads & potholes": "🛣️", "Garbage & cleaning": "🗑️", "Water supply": "💧",
+  "Drainage & sewage": "🌊", "Streetlights": "💡", "Parks & public spaces": "🌳", "Other": "📝"
+};
+var stages = ["Submitted", "Assigned", "In progress", "Resolved"];
+
+var user = null;          // logged in user
+var complaints = [];      // all complaints
+var photos = {};          // photos are kept here only (not saved after refresh)
+var category = "";        // selected category
+var photoData = "";       // selected photo
+var isSignup = false;     // login or signup mode
+
+// get saved data from the browser
+try {
+  user = JSON.parse(localStorage.getItem("user"));
+  complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+} catch (e) {
+  user = null;
+  complaints = [];
+}
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function saveData() {
+  try {
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("complaints", JSON.stringify(complaints));
+  } catch (e) {}
+}
+
+function showToast(msg) {
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.remove("hidden");
+  setTimeout(function () {
+    t.classList.add("hidden");
+  }, 3500);
+}
+
+function safe(text) {
+  // stops users from typing html into the page
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// ---------- page switching ----------
+// the page is chosen by the address bar (#home or #login),
+// so the browser Back button works between the two pages
+function showLoginPage() {
+  $("app").classList.add("hidden");
+  $("login").classList.remove("hidden");
+}
+
+function showHomePage() {
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("who").textContent = user.name;
+  showTab("report");
+}
+
+function checkPage() {
+  if (window.location.hash == "#home" && user) {
+    showHomePage();
+  } else {
+    showLoginPage();
+  }
+}
+
+window.addEventListener("hashchange", checkPage);
+
+// ---------- login ----------
+$("swBtn").onclick = function () {
+  isSignup = !isSignup;
+  if (isSignup) {
+    $("loginTitle").textContent = "Create account";
+    $("loginBtn").textContent = "Create account";
+    $("swText").textContent = "Already registered?";
+    $("swBtn").textContent = "Log in";
+    $("nameWrap").classList.remove("hidden");
+  } else {
+    $("loginTitle").textContent = "Log in";
+    $("loginBtn").textContent = "Log in";
+    $("swText").textContent = "New here?";
+    $("swBtn").textContent = "Create an account";
+    $("nameWrap").classList.add("hidden");
+  }
+};
+
+$("loginForm").onsubmit = function (e) {
+  e.preventDefault();
+  var email = $("email").value.trim();
+  var pass = $("pass").value;
+
+  if (email.indexOf("@") == -1 || email.indexOf(".") == -1) {
+    $("loginErr").textContent = "Enter a valid email address.";
+    return;
+  }
+  if (pass.length < 6) {
+    $("loginErr").textContent = "Password must be at least 6 characters.";
+    return;
+  }
+  $("loginErr").textContent = "";
+
+  // TODO: send email and password to the backend here (POST /api/login)
+  var name = $("name").value.trim();
+  if (name == "") {
+    name = email.split("@")[0];
+  }
+  user = { email: email, name: name };
+  saveData();
+  window.location.hash = "home";   // go to home page
+};
+
+$("logout").onclick = function () {
+  user = null;
+  saveData();
+  $("email").value = "";
+  $("pass").value = "";
+  window.location.hash = "login";  // go back to login page
+};
+
+// ---------- tabs ----------
+function showTab(name) {
+  var buttons = document.querySelectorAll("nav button");
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].setAttribute("aria-current", buttons[i].getAttribute("data-tab") == name);
+  }
+  if (name == "report") {
+    $("tab-report").classList.remove("hidden");
+    $("tab-track").classList.add("hidden");
+  } else {
+    $("tab-report").classList.add("hidden");
+    $("tab-track").classList.remove("hidden");
+    showList();
+  }
+}
+
+var tabButtons = document.querySelectorAll("nav button");
+for (var i = 0; i < tabButtons.length; i++) {
+  tabButtons[i].onclick = function () {
+    showTab(this.getAttribute("data-tab"));
+  };
+}
+
+// ---------- category buttons ----------
+function makeCategoryButton(name) {
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "cat";
+  b.textContent = icons[name] + " " + name;
+  b.setAttribute("aria-pressed", "false");
+  b.onclick = function () {
+    category = name;
+    var all = document.querySelectorAll(".cat");
+    for (var j = 0; j < all.length; j++) {
+      all[j].setAttribute("aria-pressed", "false");
+    }
+    b.setAttribute("aria-pressed", "true");
+    $("route").innerHTML = "This will be sent to: <b>" + categories[name] + "</b>";
+  };
+  $("cats").appendChild(b);
+}
+
+for (var name in categories) {
+  makeCategoryButton(name);
+}
+
+// ---------- photo upload ----------
+$("photo").onchange = function (e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    photoData = reader.result;
+    $("preview").src = photoData;
+    $("preview").classList.remove("hidden");
+    $("dropText").classList.add("hidden");
+  };
+  reader.readAsDataURL(file);
+};
+
+// ---------- voice for address (works in Chrome / Edge) ----------
+var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+var recognition = null;
+
+$("mic").onclick = function () {
+  if (!SpeechRec) {
+    $("micMsg").textContent = "Voice is not supported in this browser. Please type the address.";
+    return;
+  }
+  if (recognition) {
+    recognition.stop();
+    return;
+  }
+  recognition = new SpeechRec();
+  recognition.lang = "en-IN";   // use "kn-IN" for Kannada, "hi-IN" for Hindi
+  recognition.onstart = function () {
+    $("mic").classList.add("on");
+    $("micMsg").textContent = "Listening... speak the address.";
+  };
+  recognition.onresult = function (ev) {
+    var text = ev.results[0][0].transcript;
+    $("addr").value = ($("addr").value + " " + text).trim();
+  };
+  recognition.onerror = function () {
+    $("micMsg").textContent = "Could not hear. Check microphone permission and try again.";
+  };
+  recognition.onend = function () {
+    $("mic").classList.remove("on");
+    recognition = null;
+  };
+  recognition.start();
+};
+
+// ---------- report button ----------
+$("reportBtn").onclick = function () {
+  var address = $("addr").value.trim();
+
+  if (category == "") {
+    $("repErr").textContent = "Choose a category first.";
+    return;
+  }
+  if (address == "") {
+    $("repErr").textContent = "Add the address or a landmark.";
+    return;
+  }
+  $("repErr").textContent = "";
+
+  var c = {
+    id: "FMW-" + Math.floor(1000 + Math.random() * 9000),
+    category: category,
+    office: categories[category],
+    address: address,
+    desc: $("desc").value.trim(),
+    date: new Date().toLocaleDateString("en-IN"),
+    stage: 0,
+    owner: user.email
+  };
+  // TODO: send the complaint and photo to the backend here (POST /api/complaints)
+  complaints.unshift(c);
+  photos[c.id] = photoData;
+  saveData();
+
+  // clear the form
+  category = "";
+  photoData = "";
+  var all = document.querySelectorAll(".cat");
+  for (var j = 0; j < all.length; j++) {
+    all[j].setAttribute("aria-pressed", "false");
+  }
+  $("route").textContent = "Select a category to see which office will handle it.";
+  $("addr").value = "";
+  $("desc").value = "";
+  $("photo").value = "";
+  $("preview").classList.add("hidden");
+  $("dropText").classList.remove("hidden");
+
+  showToast("Reported. Your complaint number is " + c.id);
+  showTab("track");
+};
+
+// ---------- tracking list ----------
+function showList() {
+  var html = "";
+  for (var i = 0; i < complaints.length; i++) {
+    var c = complaints[i];
+    if (!user || c.owner != user.email) continue;
+
+    html += '<div class="c">';
+    html += '<div class="top"><span class="id">' + c.id + " · " + safe(c.category) + '</span><span class="small">' + c.date + "</span></div>";
+    html += '<div class="small">Handled by: ' + safe(c.office) + "</div>";
+    html += '<p style="margin:8px 0 0">' + safe(c.address) + "</p>";
+    if (c.desc != "") {
+      html += '<p class="small" style="margin:4px 0 0">' + safe(c.desc) + "</p>";
+    }
+    if (photos[c.id]) {
+      html += '<img src="' + photos[c.id] + '" alt="" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:10px">';
+    }
+    html += '<ol class="steps">';
+    for (var s = 0; s < stages.length; s++) {
+      var done = s <= c.stage ? "done" : "";
+      html += '<li class="' + done + '">' + stages[s] + "</li>";
+    }
+    html += "</ol>";
+    if (c.stage < 3) {
+      html += '<button class="link small" onclick="nextStage(\'' + c.id + '\')">Demo: move to next stage</button>';
+    } else {
+      html += '<span class="small">Resolved. Thank you for helping your ward.</span>';
+    }
+    html += "</div>";
+  }
+
+  if (html == "") {
+    html = '<div class="empty"><svg viewBox="0 0 120 90" width="140" aria-hidden="true"><rect x="30" y="8" width="60" height="74" rx="8" fill="none" stroke="currentColor" stroke-width="3" opacity=".5"/><rect x="46" y="3" width="28" height="12" rx="4" fill="#f2b705"/><path d="M44 46l10 10 22-24" fill="none" stroke="#0f6b5c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg><p>No complaints yet. Use the Report tab to file your first one.</p></div>';
+  }
+  $("list").innerHTML = html;
+}
+
+// for the demo only: in a real project the department updates the status
+function nextStage(id) {
+  for (var i = 0; i < complaints.length; i++) {
+    if (complaints[i].id == id && complaints[i].stage < 3) {
+      complaints[i].stage++;
+    }
+  }
+  saveData();
+  showList();
+}
+
+// ---------- start ----------
+// if the user is already logged in and opens the site fresh, go straight to home
+if (user && window.location.hash == "") {
+  window.location.replace("#home");
+}
+checkPage();
+</script>
+</body>
+</html>
